@@ -34,7 +34,7 @@ app.post('/analyze', upload.single('image'), async (req, res) => {
     });
 
     const respuesta = response.choices[0].message.content;
-    res.json({ result: respuesta });
+    res.json({ respuesta });
   } catch (error) {
     console.error('Error al analizar imagen:', error);
     res.status(500).json({ error: 'No se pudo procesar la imagen.' });
