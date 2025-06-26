@@ -1,8 +1,8 @@
-import express from 'express';
-import multer from 'multer';
-import cors from 'cors';
-import { readFile } from 'fs/promises';
-import OpenAI from 'openai';
+const express = require('express');
+const multer = require('multer');
+const cors = require('cors');
+const { readFile } = require('fs/promises');
+const OpenAI = require('openai');
 
 const app = express();
 const port = process.env.PORT || 10000;
