@@ -1,22 +1,21 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const { OpenAI } = require('openai');
+import express from 'express';
+import multer from 'multer';
+import cors from 'cors';
+import { readFile } from 'fs/promises';
+import OpenAI from 'openai';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const upload = multer({ dest: 'uploads/' });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.use(cors());
-app.use(bodyParser.json({ limit: '10mb' }));
 
-app.post('/analizar-imagen', async (req, res) => {
+app.post('/analyze', upload.single('image'), async (req, res) => {
   try {
-    const { base64Image } = req.body;
+    const imageData = await readFile(req.file.path);
+    const base64Image = imageData.toString('base64');
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4o',
@@ -27,7 +26,7 @@ app.post('/analizar-imagen', async (req, res) => {
             { type: 'text', text: '¿Qué ves en esta imagen? ¿Es compostable?' },
             {
               type: 'image_url',
-              image_url: { url: base64Image }
+              image_url: { url: `data:image/jpeg;base64,${base64Image}` }
             }
           ]
         }
@@ -35,9 +34,9 @@ app.post('/analizar-imagen', async (req, res) => {
     });
 
     const respuesta = response.choices[0].message.content;
-    res.json({ respuesta });
+    res.json({ result: respuesta });
   } catch (error) {
-    console.error('Error al enviar a ChatGPT:', error);
+    console.error('Error al analizar imagen:', error);
     res.status(500).json({ error: 'No se pudo procesar la imagen.' });
   }
 });
